@@ -317,6 +317,7 @@ function postal.nginx
 	
         sudo replace "yourdomain.com" "$SERVER" -- $nginxdir/sites-available/default
 	sudo systemctl restart nginx
+	postal make-user
 }
 
 

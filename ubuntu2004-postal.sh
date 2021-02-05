@@ -317,7 +317,29 @@ function postal.nginx
 	
         sudo replace "yourdomain.com" "$SERVER" -- $nginxdir/sites-available/default
 	sudo systemctl restart nginx
-	postal make-user
+}
+
+function postal.systemd
+{
+cat << SYSD_CMD | sudo tee /etc/systemd/system/postal.service
+[Unit]
+Description=Postal Mail Platform
+After=mysql.service rabbitmq-server.service
+Wants=mysql.service rabbitmq-server.service
+
+[Service]
+ExecStart=/usr/bin/postal start
+ExecStop=/usr/bin/postal stop
+ExecReload=/usr/bin/postal restart
+User=postal
+Restart=on-failure
+Type=forking
+
+[Install]
+WantedBy=mysql.service rabbitmq-server.service
+SYSD_CMD
+sudo systemctl daemon-reload
+sudo systemctl enable postal
 }
 
 
@@ -341,6 +363,8 @@ function postal.install
 	postal.generateconfig
 	postal.finishinstall
 	postal.nginx
+	postal.systemd
+	postal make-user
 #
 # All done
 #
